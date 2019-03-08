@@ -8,4 +8,6 @@ html = '''<div class = "asd">
   </div>
 </div>'''
 soup = bs4.BeautifulSoup(html,"html.parser")
-print(soup.a.name)
+for st in soup.stripped_strings:
+    print(st)
+    print('---')

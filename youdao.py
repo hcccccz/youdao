@@ -1,6 +1,7 @@
 import requests
 import re
 import os
+import bs4
 
 def init(word): #获取页面
     url = "https://www.youdao.com/w/"
@@ -9,7 +10,7 @@ def init(word): #获取页面
     return page
 
 def plain_exp(page): #获取直接释义直接释义
-    res = ""
+    res = "【有道释义】\n\n"
     if "<div id=\"phrsListTab\" class=\"trans-wrapper clearfix\">" in page: #有词典结果
         container = re.search("<div class=\"trans-container\">.*?<ul>(.*?)</ul>.*?</div>",page,re.S).group(1)
         if 'wordGroup' in container: #中文
@@ -35,16 +36,43 @@ def plain_exp(page): #获取直接释义直接释义
                 rep_s = "".join(rep_l)
                 res += rep_s+"\n"
 
-        return res
-    else:
-        return ("没有结果")
+        print(res)
+
 
 #------------------------------分割-------------------------------------------------------------------
+def one(page):
+    exp = "【网络释义】\n\n"
+    bs = bs4.BeautifulSoup(page,"html.parser")
+    webtrans = bs.find('div',{"id":"webTransToggle"})
+    if webtrans:
+        title = webtrans.find_all("div",{"class":"title"})
+        for t in title[:-1]:
+            t = t.get_text().strip()
+            if t.startswith("["):
+                t = " ".join(t.split())
+            exp += t
+            exp += "\n"
+        exp += "\n\n【网络短语】\n\n"
+        webphrase = webtrans.find_all('p',{"class":"wordGroup"})
+        for phrase in webphrase:
+            text = phrase.get_text()
+            text = re.sub("\n"," ",text)
+            text = " ".join(text.split())
+            exp += text+"\n"
 
+    print(exp)
+
+#-----------------------------分割--------------------------------------------------------------------
+def two(page):
+    exp = "【专业释义】\n\n"
+    bs = bs4.BeautifulSoup(page,"html.parser")
+    tpetrans = bs.find('div',{"id":"tPETrans"})
 
 
 
 if __name__ == "__main__":
-    r = init("结果")
-    word = plain_exp(r)
-    print(word)
+    while True:
+        word = input("单词..: ")
+        r = init(word)
+        plain_exp(r)
+        one(r)
