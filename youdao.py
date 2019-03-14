@@ -67,12 +67,29 @@ def two(page):
     exp = "【专业释义】\n\n"
     bs = bs4.BeautifulSoup(page,"html.parser")
     tpetrans = bs.find('div',{"id":"tPETrans"})
+    if tpetrans:
+        ptypes = tpetrans.find_all('a',class_=re.compile("p-type"))
+        for i in range(len(ptypes)):
+            inx = "ptype_" + str(i) + " types"
+            lis = tpetrans.find("li",class_=re.compile(inx))
+            explains_raw = lis.find_all("span",class_="title")
+            explains_raw = [explain_raw.get_text() for explain_raw in explains_raw]
+            explain = ptypes[i].get_text() + ": " + ",".join(explains_raw)
+            exp += explain + "\n"
+        return(exp)
+# ---------------------------------分割----------------------------------------------------------------
+def three(page):
+    exp = "【柯林斯英汉双解大词典】\n\n"
+    bs = bs4.BeautifulSoup(page,"html.parser")
+    coltrans = bs.find('div',id="collinsResult")
+    if coltrans:
+        print(coltrans.find_all("span",class_="title"))
 
 
 
 if __name__ == "__main__":
-    while True:
-        word = input("单词..: ")
-        r = init(word)
-        plain_exp(r)
-        one(r)
+    word = input("单词..: ")
+    print(type(word))
+    r = init(word)
+    # plain_exp(r)
+    three(r)
